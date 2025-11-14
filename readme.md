@@ -1,118 +1,158 @@
-# Team Management - Backend
+````md
+# Team Management — Guia de Execução
 
-Este projeto é um sistema de gestão de colaboradores, demandas, atendimentos, projetos, receitas e eventos, utilizando **Node.js**, **Fastify** e **PostgreSQL**.  
-
-Ele conta com integração via **Docker** para o banco de dados e utiliza **TypeScript**
-
----
-
-## Pré-requisitos
-
-Antes de rodar o projeto, você precisa ter instalado:
-
-- [Docker](https://www.docker.com/get-started)  
-- [Node.js](https://nodejs.org/) (versão 18+)  
-- [pnpm](https://pnpm.io/installation)  
+Este projeto utiliza **Node.js**, **TypeScript**, **PostgreSQL via Docker** e scripts automatizados para criação do banco, enums, tabelas e seed inicial.
 
 ---
 
-## Configuração do projeto
+## 1. Requisitos
 
-1. Clone o repositório:
+Antes de rodar o projeto, instale:
 
-```bash
-git clone <https://github.com/PabloFalc/projeto-db.git>
-cd back-controle
+- **Node.js** (v18+)
+- **PNPM** (versão usada: `pnpm@10.14.0`)
+- **Docker** e **Docker Compose**
+
+---
+
+## 2. Instalação das dependências
+
+```sh
+pnpm install
 ````
 
-2. Instale as dependências:
-
-```bash
-pnpm install
-```
-
-3. Crie um arquivo `.env` baseado no `.env.example` (ou configure seu PostgreSQL):
-
-```env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/projeto-db"
-DIRECT_URL="postgresql://postgres:postgres@localhost:5432/projeto-db"
-PORT=3100
-```
-
 ---
 
-## Rodando a aplicação
+## 3. Scripts principais
 
-Para rodar em modo **desenvolvimento**:
+Os scripts estão definidos no `package.json`.
 
-```bash
-pnpm dev
-```
+### **Subir ambiente + rodar servidor**
 
-Para rodar com **seed e migrations**:
-
-```bash
+```sh
 pnpm start
 ```
 
-Para resetar banco e parar containers:
+O que acontece:
 
-```bash
-pnpm run kill
+1. `docker compose up -d` inicia o PostgreSQL no container
+2. O servidor inicia com:
+
+   ```sh
+   tsx watch src/server.ts
+   ```
+3. O backend fica disponível (ex.: [http://127.0.0.1:3100/docs](http://127.0.0.1:3100/docs))
+
+---
+
+### **Configurar completamente o banco (criar enums, tabelas e seed)**
+
+```sh
+pnpm db:setup
+```
+
+Passos executados internamente:
+
+1. Sobe o banco:
+
+   ```sh
+   docker compose up -d
+   ```
+2. Executa:
+
+   * `src/database/setup.ts` → cria enums e tabelas
+   * `src/seed.ts` → popula dados iniciais
+3. Derruba e remove volumes do container:
+
+   ```sh
+   docker compose down -v
+   ```
+
+Use esse comando **apenas quando quiser reset total** do banco.
+
+---
+
+### **Destruir o banco e tudo relacionado**
+
+```sh
+pnpm kill
+```
+
+Executa:
+
+1. `tsx src/database/kill.ts` → limpa tabelas
+2. `docker compose down -v` → remove container + volumes
+
+---
+
+## 4. Estrutura mínima esperada
+
+```
+src/
+  server.ts
+  client.ts
+  seed.ts
+  database/
+    setup.ts
+    kill.ts
+    enums/
+    tables/
+    ...
+docker-compose.yml
+```
+
+O `client.ts` deve exportar o cliente do PostgreSQL.
+
+---
+
+## 5. Variáveis de ambiente
+
+Crie um `.env` na raiz contendo:
+
+```env
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/team_management
+PORT=3100
+```
+
+Ou conforme seu docker-compose.
+
+---
+
+## 6. Executando o servidor manualmente (sem scripts)
+
+### Subir banco:
+
+```sh
+docker compose up -d
+```
+
+### Rodar servidor:
+
+```sh
+tsx watch src/server.ts
 ```
 
 ---
 
-## Docker Compose
+## 7. Fluxo recomendado para desenvolvimento
 
-O projeto utiliza Docker Compose para o PostgreSQL. O container é configurado assim:
+1. **Primeira vez:**
 
-```yaml
-services:
-  db:
-    image: postgres:17
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: projeto-db
-    ports:
-      - "5432:5432"
+```sh
+pnpm db:setup
+```
+
+2. **Depois:**
+
+```sh
+pnpm start
+```
+
+3. **Quando quiser apagar e recomeçar:**
+
+```sh
+pnpm kill
+pnpm db:setup
 ```
 
 ---
-
-## Rotas disponíveis
-
-> Todos os endpoints utilizam o método **GET**, com suporte a `limit` e `offset` via query string quando aplicável.
-
-### Colaboradores
-
-* `GET /colaboradores` – Lista todos os colaboradores com total de demandas.
-* `GET /colaboradores/:id` – Busca colaborador específico pelo ID.
-
-### Atendimentos
-
-* `GET /atendimentos` – Lista todos os atendimentos com informações de colaborador, usuário e receita.
-
-### Usuários
-
-* `GET /usuarios` – Lista todos os usuários com total de atendimentos.
-
-### Projetos
-
-* `GET /projetos` – Lista todos os projetos com total de atendimentos e receitas.
-
-### Eventos
-
-* `GET /eventos` – Lista todos os eventos com total de participantes (via `_ColaboradorToEvento`).
-
-### Demandas
-
-* `GET /demandas` – Lista todas as demandas com total de atendimentos e nome do colaborador.
-
----
-
-## Observações
-
----
-

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { client } from '../server';
+import { client } from '../client';
 
 export async function getProjetos(server: FastifyInstance) {
     server.get<{ Querystring: { limit?: number; offset?: number } }>(

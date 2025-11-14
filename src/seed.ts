@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { client } from './server';
+import { client } from './client';
 
 async function main() {
     await client.connect();
@@ -239,6 +239,7 @@ async function main() {
         console.error('Erro no seed:', err);
     } finally {
         await client.end();
+        process.exit(0);
     }
 }
 

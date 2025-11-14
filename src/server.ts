@@ -1,10 +1,5 @@
 import fastify, { type FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
 import { getColaboradores, getColaboradoresById } from './querys/colaborador';
 import { getAtendimentos } from './querys/atendimento';
 import { getDemandas } from './querys/demanda';
@@ -12,10 +7,6 @@ import { getEventos } from './querys/evento';
 import { getProjetos } from './querys/projeto';
 import { getReceitas } from './querys/receita';
 import { getUsuarios } from './querys/user';
-
-export const client = new Pool({
-    connectionString: process.env.DATABASE_URL,
-});
 
 const app: FastifyInstance = fastify();
 

@@ -4,10 +4,9 @@
     "description": "",
     "main": "dist/index.js",
     "scripts": {
-        "start": "docker compose up -d && npx prisma generate && npx prisma migrate deploy && tsx watch src/seed.ts && tsx src/server.ts",
-        "dev": "tsx watch src/server.ts",
-        "seed": "tsx watch src/seed.ts",
-        "kill": "npx prisma migrate reset && docker compose down -v"
+        "db:setup": "docker compose up -d && tsx src/database/setup.ts && tsx src/seed.ts && docker compose down -v",
+        "kill": "tsx src/database/kill.ts && docker compose down -v",
+        "start": "docker compose up -d && tsx watch src/server.ts"
     },
     "keywords": [],
     "author": "",
@@ -17,17 +16,14 @@
         "@biomejs/biome": "1.9.4",
         "@types/node": "^22.14.1",
         "@types/pg": "^8.15.6",
-        "prisma": "^6.6.0",
         "tsup": "^8.4.0",
         "tsx": "^4.19.3",
         "typescript": "^5.8.3"
     },
     "dependencies": {
         "@fastify/cors": "^11.0.1",
-        "@prisma/client": "^6.6.0",
         "dotenv": "^16.5.0",
         "fastify": "^5.2.2",
-        "jsonwebtoken": "^9.0.2",
         "pg": "^8.16.3",
         "uuid": "^13.0.0"
     }
