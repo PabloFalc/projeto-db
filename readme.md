@@ -1,91 +1,66 @@
-````md
-# Team Management — Guia de Execução
+# Team Management — Guia Rápido
 
-Este projeto utiliza **Node.js**, **TypeScript**, **PostgreSQL via Docker** e scripts automatizados para criação do banco, enums, tabelas e seed inicial.
+Fluxo recomendado:
+
+1. Inicio
+   ```sh
+   pnpm db:setup
+   ```
+2. Desenvolvimento diário:  
+   ```sh
+   pnpm start
+   ```
+3 Reset do banco:
+   ```sh
+   pnpm kill
+   ```
+
+Observação importante:  
+Os scripts estão com um comportamento bugado. **Após cada comando** como `pnpm kill`, `pnpm db:setup` ou `pnpm start`, é necessário **pressionar CTRL+C** para encerrar o processo antes de rodar o próximo comando.
 
 ---
 
-## 1. Requisitos
+## Requisitos
 
-Antes de rodar o projeto, instale:
-
-- **Node.js** (v18+)
-- **PNPM** (versão usada: `pnpm@10.14.0`)
-- **Docker** e **Docker Compose**
+- Node.js 18+
+- PNPM
+- Docker + Docker Compose
 
 ---
 
-## 2. Instalação das dependências
+## Instalar dependências
 
 ```sh
 pnpm install
-````
+```
 
 ---
 
-## 3. Scripts principais
+## Scripts úteis
 
-Os scripts estão definidos no `package.json`.
-
-### **Subir ambiente + rodar servidor**
+### Iniciar servidor + banco
 
 ```sh
 pnpm start
 ```
 
-O que acontece:
-
-1. `docker compose up -d` inicia o PostgreSQL no container
-2. O servidor inicia com:
-
-   ```sh
-   tsx watch src/server.ts
-   ```
-3. O backend fica disponível (ex.: [http://127.0.0.1:3100/docs](http://127.0.0.1:3100/docs))
-
----
-
-### **Configurar completamente o banco (criar enums, tabelas e seed)**
+### Reset total (cria tabelas, enums e seed)
 
 ```sh
 pnpm db:setup
 ```
 
-Passos executados internamente:
-
-1. Sobe o banco:
-
-   ```sh
-   docker compose up -d
-   ```
-2. Executa:
-
-   * `src/database/setup.ts` → cria enums e tabelas
-   * `src/seed.ts` → popula dados iniciais
-3. Derruba e remove volumes do container:
-
-   ```sh
-   docker compose down -v
-   ```
-
-Use esse comando **apenas quando quiser reset total** do banco.
-
----
-
-### **Destruir o banco e tudo relacionado**
+### Destruir banco e volumes
 
 ```sh
 pnpm kill
 ```
 
-Executa:
-
-1. `tsx src/database/kill.ts` → limpa tabelas
-2. `docker compose down -v` → remove container + volumes
+Lembre: após qualquer comando acima, **CTRL+C**.
 
 ---
 
-## 4. Estrutura mínima esperada
+## Estrutura mínima
 
 ```
 src/
@@ -95,64 +70,36 @@ src/
   database/
     setup.ts
     kill.ts
-    enums/
-    tables/
-    ...
 docker-compose.yml
 ```
 
-O `client.ts` deve exportar o cliente do PostgreSQL.
-
 ---
 
-## 5. Variáveis de ambiente
+## Variáveis de ambiente
 
-Crie um `.env` na raiz contendo:
+Arquivo `.env`:
 
 ```env
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/team_management
 PORT=3100
 ```
 
-Ou conforme seu docker-compose.
-
 ---
 
-## 6. Executando o servidor manualmente (sem scripts)
+# Rotas disponíveis
 
-### Subir banco:
+Base: `http://localhost:3100`
 
-```sh
-docker compose up -d
-```
+| Rota               | Método | Descrição                    |
+|-------------------|--------|------------------------------|
+| `/atendimentos`   | GET    | Lista atendimentos           |
+| `/colaborador`    | GET    | Lista colaboradores          |
+| `/colaborador/:id`| GET    | Colaborador por ID           |
+| `/demandas`       | GET    | Lista demandas               |
+| `/eventos`        | GET    | Lista eventos                |
+| `/projetos`       | GET    | Lista projetos               |
+| `/receitas`       | GET    | Lista receitas               |
+| `/usuarios`       | GET    | Lista usuários               |
 
-### Rodar servidor:
-
-```sh
-tsx watch src/server.ts
-```
-
----
-
-## 7. Fluxo recomendado para desenvolvimento
-
-1. **Primeira vez:**
-
-```sh
-pnpm db:setup
-```
-
-2. **Depois:**
-
-```sh
-pnpm start
-```
-
-3. **Quando quiser apagar e recomeçar:**
-
-```sh
-pnpm kill
-pnpm db:setup
-```
-
----
+Query opcional para todas as rotas de listagem:  
+`?limit=10&offset=0`
